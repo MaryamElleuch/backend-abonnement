@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Contrat Client Final</title>
+  <style>
+    @page { margin: 22mm 18mm; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      color: #111;
+      line-height: 1.45;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #111;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .meta {
+      text-align: right;
+      font-size: 11px;
+      color: #444;
+    }
+
+    .section {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+    }
+
+    .field .label {
+      font-size: 10.5px;
+      color: #666;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+
+    .field .value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #111;
+      word-break: break-word;
+    }
+
+    .signatures {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .sig-box {
+      border: 1px dashed #888;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sig-title {
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .sig-image {
+      margin-top: 8px;
+      margin-bottom: 10px;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+    }
+
+    .sig-image img {
+      max-width: 240px;
+      max-height: 80px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 4px;
+      background: #fff;
+    }
+
+    .sig-empty {
+      margin-top: 8px;
+      min-height: 70px;
+      display: flex;
+      align-items: flex-end;
+      color: #444;
+    }
+
+    .sig-line {
+      border-top: 1px solid #222;
+      padding-top: 6px;
+      font-size: 11px;
+      color: #555;
+    }
+
+    .footer {
+      margin-top: 14px;
+      font-size: 10px;
+      color: #777;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <h1>Contrat client final</h1>
+      <div>Document généré automatiquement</div>
+    </div>
+
+    <div class="meta">
+      <div><strong>Réf:</strong> {{contratId}}</div>
+      <div>Date de génération: {{dateGeneration}}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">1) Informations</div>
+
+    <div class="grid">
+      <div class="field">
+        <div class="label">Entreprise</div>
+        <div class="value">{{entrepriseNom}}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Client final</div>
+        <div class="value">{{clientNom}}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Email client</div>
+        <div class="value">{{clientEmail}}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Offre</div>
+        <div class="value">{{abonnementNom}}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Prix</div>
+        <div class="value">{{prixFormate}} / {{dureeLabel}}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Date début</div>
+        <div class="value">{{dateDebut}}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Date fin</div>
+        <div class="value">{{dateFin}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">2) Conditions</div>
+    <ul>
+      <li>Le client final reconnaît avoir pris connaissance de l’offre souscrite.</li>
+      <li>Le paiement est confirmé avant activation du service.</li>
+      <li>Le présent contrat devient pleinement valable après signature du client final.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">3) Signatures</div>
+
+    <div class="signatures">
+      <div class="sig-box">
+        <div>
+          <div class="sig-title">Entreprise</div>
+
+          {{#signatureEntrepriseImage}}
+            <div class="sig-image">
+              <img src="{{signatureEntrepriseImage}}" alt="Signature entreprise" />
+            </div>
+          {{/signatureEntrepriseImage}}
+
+          {{^signatureEntrepriseImage}}
+            <div class="sig-empty">__________________________</div>
+          {{/signatureEntrepriseImage}}
+        </div>
+
+        <div class="sig-line">Signature entreprise</div>
+      </div>
+
+      <div class="sig-box">
+        <div>
+          <div class="sig-title">Client final</div>
+
+          {{#signatureClientImage}}
+            <div class="sig-image">
+              <img src="{{signatureClientImage}}" alt="Signature client final" />
+            </div>
+          {{/signatureClientImage}}
+
+          {{^signatureClientImage}}
+            <div class="sig-empty">__________________________</div>
+          {{/signatureClientImage}}
+        </div>
+
+        <div class="sig-line">Signature client final</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>Référence contrat client: {{contratId}}</div>
+  </div>
+</body>
+</html>

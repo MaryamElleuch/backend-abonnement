@@ -1,0 +1,302 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum StatutEntreprise {
+  ACTIVE
+  SUSPENDUE
+  DESACTIVE
+}
+
+enum RoleUtilisateur {
+  ADMINISTRATEUR
+  PROPRIETAIRE
+  DIRECTEUR
+  COMPTABLE
+  EMPLOYE
+  CLIENT
+}
+
+enum StatutUtilisateur {
+  ACTIF
+  BLOQUE
+}
+
+enum StatutPaiement {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum StatutContrat {
+  DRAFT
+  SIGNED
+  CANCELLED
+}
+
+model Entreprise {
+  id                String           @id @default(uuid())
+  nom               String
+  slug              String           @unique
+  statut            StatutEntreprise @default(ACTIVE)
+  logo              String?
+  couleurPrincipale String?
+
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+
+  abonnementId          String?
+  abonnement            Abonnement?            @relation("EntrepriseAbonnement", fields: [abonnementId], references: [id])
+  abonnementExpireLe    DateTime?
+  abonnementsEntreprise AbonnementEntreprise[]
+
+  utilisateurs Utilisateur[]
+
+  achatAbonnement AchatAbonnement?
+  contrat         ContratEntreprise?
+
+  achatsClients   AchatAbonnementClient[]
+  contratsClients ContratClient[]
+
+  dateCreation     DateTime @default(now())
+  dateModification DateTime @updatedAt
+}
+
+model Utilisateur {
+  id             String            @id @default(uuid())
+  email          String            
+  motDePasseHash String
+  nomComplet     String?
+  role           RoleUtilisateur
+  statut         StatutUtilisateur @default(ACTIF)
+
+  // ✅ Stripe (pour client final)
+  stripeCustomerId String? @unique
+
+  emailVerifie Boolean @default(false)
+  tel          String?
+  telVerifie   Boolean @default(false)
+
+  entrepriseId       String?
+  entreprise         Entreprise?     @relation(fields: [entrepriseId], references: [id])
+  contratsClients    ContratClient[]
+  abonnementId       String?
+  abonnement         Abonnement?     @relation("UtilisateurAbonnement", fields: [abonnementId], references: [id])
+  abonnementExpireLe DateTime?
+
+  achats       AchatAbonnement[]       @relation("UtilisateurAchats")
+  achatsClient AchatAbonnementClient[] @relation("AchatClientPayePar")
+  signatures   Signature[]
+
+  dateCreation     DateTime @default(now())
+  dateModification DateTime @updatedAt
+}
+enum IntervalAbonnement {
+  DAY
+  MONTH
+  YEAR
+}
+
+model Abonnement {
+  id              String        @id @default(uuid())
+  nom             String
+  description     String?
+  prix            Float
+
+  duree           Int @map("dureeMois")
+  interval        IntervalAbonnement @default(MONTH)
+    
+  actif           Boolean       @default(true)
+  // ✅ Stripe Product/Price (mensuel)
+  stripeProductId String?
+  stripePriceId   String?
+  entreprises     Entreprise[]  @relation("EntrepriseAbonnement")
+  utilisateurs    Utilisateur[] @relation("UtilisateurAbonnement")
+
+  achatsEntreprise   AchatAbonnement[]
+  achatsClient       AchatAbonnementClient[]
+  contratsEntreprise ContratEntreprise[]
+
+  dateCreation   DateTime  @default(now())
+  dateExpiration DateTime?
+}
+
+model AchatAbonnement {
+  id String @id @default(uuid())
+
+  entrepriseId String     @unique
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id])
+
+  abonnementId String
+  abonnement   Abonnement @relation(fields: [abonnementId], references: [id])
+
+  montant        Float
+  statutPaiement StatutPaiement @default(PENDING)
+
+  // ✅ Stripe checkout/session + subscription
+  stripeSessionId      String? @unique
+  stripeSubscriptionId String? @unique
+  paymentIntentId      String?
+  latestInvoiceId      String?
+
+  utilisateurId String?
+  utilisateur   Utilisateur? @relation("UtilisateurAchats", fields: [utilisateurId], references: [id])
+
+  dateAchat DateTime           @default(now())
+  contrat   ContratEntreprise?
+
+  @@index([abonnementId])
+  @@index([utilisateurId])
+}
+
+model ContratEntreprise {
+  id     String        @id @default(uuid())
+  statut StatutContrat @default(DRAFT)
+
+  entrepriseId String     @unique
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id])
+
+  achatId String          @unique
+  achat   AchatAbonnement @relation(fields: [achatId], references: [id])
+
+  abonnementId String
+  abonnement   Abonnement @relation(fields: [abonnementId], references: [id])
+
+  pdfUrl                  String?
+  pdfData                 Bytes?
+  hashPdf                 String?
+  signatureToken          String?   @unique
+  signatureTokenExpiresAt DateTime?
+  genereLe                DateTime  @default(now())
+  signeLe                 DateTime?
+
+  signatures Signature[]
+
+  @@index([abonnementId])
+}
+
+model Signature {
+  id String @id @default(uuid())
+
+  contratId String
+  contrat   ContratEntreprise @relation(fields: [contratId], references: [id])
+
+  signerUserId String?
+  signerUser   Utilisateur? @relation(fields: [signerUserId], references: [id])
+
+  signedAt  DateTime @default(now())
+  ip        String?
+  userAgent String?
+
+  signatureHash String?
+  signatureImage String? @db.LongText
+  methode       String?
+
+  @@index([contratId])
+  @@index([signerUserId])
+}
+
+model AchatAbonnementClient {
+  id String @id @default(uuid())
+
+  entrepriseId String
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id])
+
+  // ✅ ancien (admin) - tu le gardes
+  abonnementId String?
+  abonnement   Abonnement? @relation(fields: [abonnementId], references: [id])
+
+  // ✅ nouveau (entreprise)
+  abonnementEntrepriseId String?
+  abonnementEntreprise   AbonnementEntreprise? @relation(fields: [abonnementEntrepriseId], references: [id])
+
+  clientId String
+  client   Utilisateur @relation("AchatClientPayePar", fields: [clientId], references: [id])
+
+  montant        Float
+  statutPaiement StatutPaiement @default(PENDING)
+
+  stripeSessionId String?        @unique
+  stripeSubscriptionId String? @unique
+  paymentIntentId String?
+  latestInvoiceId      String?
+
+  contratClient   ContratClient?
+  dateAchat       DateTime       @default(now())
+
+  @@index([entrepriseId])
+  @@index([abonnementId])
+  @@index([abonnementEntrepriseId])
+  @@index([clientId])
+}
+
+model AbonnementEntreprise {
+  id          String  @id @default(uuid())
+  nom         String
+  description String?
+  prix        Float
+  duree           Int @map("dureeMois")
+  interval        IntervalAbonnement @default(MONTH)
+  actif       Boolean @default(true)
+
+  // Propriétaire de l’offre
+  entrepriseId String
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id])
+
+  // Optionnel si tu veux créer Product/Price Stripe
+  stripeProductId String?
+  stripePriceId   String?
+
+  // achats liés (clients finaux)
+  achatsClients AchatAbonnementClient[]
+
+  dateCreation     DateTime @default(now())
+  dateModification DateTime @updatedAt
+
+  @@index([entrepriseId])
+  @@index([actif])
+}
+
+model StripeEvent {
+  id        String   @id // ex: evt_...
+  type      String
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}
+
+model ContratClient {
+  id     String        @id @default(uuid())
+  statut StatutContrat @default(DRAFT)
+
+  achatClientId String                @unique
+  achatClient   AchatAbonnementClient @relation(fields: [achatClientId], references: [id])
+
+  entrepriseId String
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id])
+
+  clientId String
+  client   Utilisateur @relation(fields: [clientId], references: [id])
+
+  pdfUrl  String?
+  pdfData Bytes?
+  hashPdf String?
+
+  signatureEntrepriseImage String? @db.LongText
+  signatureClientImage     String? @db.LongText
+
+  signatureToken          String?   @unique
+  signatureTokenExpiresAt DateTime?
+
+  genereLe DateTime  @default(now())
+  signeLe  DateTime?
+
+  @@index([entrepriseId])
+  @@index([clientId])
+}
