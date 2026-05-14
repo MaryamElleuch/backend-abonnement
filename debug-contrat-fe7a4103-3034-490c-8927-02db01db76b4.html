@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Contrat d’Abonnement</title>
+
+  <style>
+    @page {
+      margin: 18mm 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #1f2937;
+      margin: 0;
+      background: #fff;
+    }
+
+    .document {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    /* HEADER */
+    .header {
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .meta {
+      text-align: right;
+      font-size: 12px;
+      color: #374151;
+    }
+
+    /* SECTION */
+    .section {
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    /* INFO GRID */
+    .info-grid {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .info-row {
+      display: flex;
+    }
+
+    .info-row:not(:last-child) {
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .info-label {
+      width: 35%;
+      background: #f8fafc;
+      padding: 10px;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .info-value {
+      width: 65%;
+      padding: 10px;
+    }
+
+    .highlight {
+      font-weight: 700;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    /* CONDITIONS */
+    .conditions-box {
+      border: 1px solid #e5e7eb;
+      border-left: 4px solid #0f172a;
+      padding: 12px 16px;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+
+    .conditions {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .conditions li {
+      margin-bottom: 6px;
+    }
+
+    /* SIGNATURE */
+    .signature-card {
+      width: 320px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .signature-label {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .signature-box {
+      height: 100px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9fafb;
+    }
+
+    .signature-box img {
+      max-height: 80px;
+      max-width: 100%;
+    }
+
+    .signature-placeholder {
+      font-size: 11px;
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    .signature-footer {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #6b7280;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 6px;
+    }
+
+    /* FOOTER */
+    .footer {
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 10px;
+      color: #6b7280;
+    }
+
+    /* PRINT FIX */
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+      }
+
+      .section,
+      .signature-card,
+      .info-grid {
+        page-break-inside: avoid;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="document">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <h1 class="title">Contrat d’Abonnement</h1>
+          <div class="subtitle">Document officiel généré automatiquement</div>
+        </div>
+
+        <div class="meta">
+          <div><strong>Réf :</strong> fe7a4103-3034-490c-8927-02db01db76b4</div>
+          <div><strong>Date :</strong> 05&#x2F;05&#x2F;2026</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFOS -->
+    <div class="section">
+      <div class="section-title">Informations</div>
+
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-label">Entreprise</div>
+          <div class="info-value highlight">Sodeko</div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label">Propriétaire</div>
+          <div class="info-value">Sodeko@gmail.com</div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label">Abonnement</div>
+          <div class="info-value highlight">Abonnement Journalier</div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label">Tarif</div>
+          <div class="info-value">
+            <span class="highlight">10.00 EUR</span>
+            <span class="muted"> / 0 mois</span>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label">Date début</div>
+          <div class="info-value">05&#x2F;05&#x2F;2026</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CONDITIONS -->
+    <div class="section">
+      <div class="section-title">Conditions</div>
+
+      <div class="conditions-box">
+        <ul class="conditions">
+          <li>Paiement sécurisé via Stripe.</li>
+          <li>Renouvellement automatique.</li>
+          <li>Activation après paiement et signature.</li>
+          <li>Respect des normes légales (RGPD).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="section">
+      <div class="section-title">Signature</div>
+
+      <div class="signature-card">
+        <div class="signature-label">Entreprise</div>
+
+        <div class="signature-box">
+
+            <div class="signature-placeholder">Aucune signature</div>
+        </div>
+
+        <div class="signature-footer">
+          Nom, signature et date
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      Document généré automatiquement • Réf : fe7a4103-3034-490c-8927-02db01db76b4
+    </div>
+
+  </div>
+</body>
+</html>

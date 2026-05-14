@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body , Patch} from '@nestjs/common';
 import { AbonnementService } from './abonnement.service';
 import { CreateAbonnementDto } from './dto/create-abonnement.dto';
 import { UpdateAbonnementDto } from './dto/update-abonnement.dto';
@@ -18,8 +18,8 @@ export class AbonnementController {
   @Get(':id')
   @ApiOperation({ summary: "Détails d'un abonnement entreprise" })
   @ApiOkResponse({ description: 'Abonnement trouvé' })
-  async getOne(@Param('abonnementId') abonnementId: string) {
-    return this.abonnementService.getAbonnementById(abonnementId);
+  async getOne(@Param('id') id: string) {
+    return this.abonnementService.getAbonnementById(id);
   }
 
   @Post()
@@ -27,7 +27,11 @@ export class AbonnementController {
   create(@Body() createAbonnementDto: CreateAbonnementDto) {
     return this.abonnementService.createAbonnement(createAbonnementDto);
   }
-
+  @Patch(':id/archive')
+@ApiOperation({ summary: 'Archiver un abonnement entreprise (Admin)' })
+archive(@Param('id') id: string) {
+  return this.abonnementService.archiveAbonnement(id);
+}
   @Put(':id')
   @ApiOperation({ summary: 'Modifier un abonnement entreprise (Admin)' })
   update(@Param('id') id: string, @Body() updateAbonnementDto: UpdateAbonnementDto) {

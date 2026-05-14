@@ -40,15 +40,34 @@ export class AuthService {
         role: true,
         entrepriseId: true,
         motDePasseHash: true,
-        entreprise: { select: { slug: true } },
+        // entreprise: { select: { slug: true } },
+        statut: true,
+entreprise: { select: { slug: true, statut: true } },
       },
     });
+ if (utilisateurInterne && entrepriseSlug) {
+  if (utilisateurInterne.role !== RoleUtilisateur.PROPRIETAIRE) {
+    throw new UnauthorizedException('Cette page est réservée aux clients et à l’entreprise');
+  }
+
+  if (utilisateurInterne.entreprise?.slug !== entrepriseSlug) {
+    throw new UnauthorizedException('Cette entreprise ne correspond pas à cette page');
+  }
+}
 
     if (utilisateurInterne) {
       const ok = await bcrypt.compare(motDePasse, utilisateurInterne.motDePasseHash);
       if (!ok) {
         throw new UnauthorizedException('Identifiants invalides');
       }
+      if (
+  utilisateurInterne.statut === 'SUSPENDU' ||
+  utilisateurInterne.statut === 'SUSPENDUE' ||
+  utilisateurInterne.entreprise?.statut === 'SUSPENDU' ||
+  utilisateurInterne.entreprise?.statut === 'SUSPENDUE'
+) {
+  throw new UnauthorizedException('Compte ou entreprise suspendu');
+}
 
       const payload = {
         sub: utilisateurInterne.id,
@@ -80,7 +99,8 @@ export class AuthService {
         role: true,
         entrepriseId: true,
         motDePasseHash: true,
-        entreprise: { select: { slug: true } },
+        statut: true, 
+        entreprise: { select: { slug: true, statut: true } },
       },
     });
 
@@ -92,6 +112,14 @@ export class AuthService {
     if (!ok) {
       throw new UnauthorizedException('Identifiants invalides');
     }
+    if (
+  utilisateurClient.statut === 'SUSPENDU' ||
+  utilisateurClient.statut === 'SUSPENDUE' ||
+  utilisateurClient.entreprise?.statut === 'SUSPENDU' ||
+  utilisateurClient.entreprise?.statut === 'SUSPENDUE'
+) {
+  throw new UnauthorizedException('Compte ou entreprise suspendu');
+}
 
     const payload = {
       sub: utilisateurClient.id,

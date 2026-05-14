@@ -91,6 +91,13 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get contratClient() {
   return this.client?.contratClient;
   }
+  get paiementAbonnementEntreprise() {
+  return this.client.paiementAbonnementEntreprise;
+}
+
+get paiementAbonnementClient() {
+  return this.client.paiementAbonnementClient;
+}
   // General Prisma methods
   $connect() {
     return this.client?.$connect?.();

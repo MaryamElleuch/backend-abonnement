@@ -66,4 +66,12 @@ update(
 ) {
   return this.service.updateMine(req.user, id, dto);
 }
+@UseGuards(AuthGuard('jwt'))
+@Patch(':id/archive')
+@ApiOperation({
+  summary: "Archiver un abonnement spécifique de l'entreprise connectée (PROPRIETAIRE uniquement)",
+})
+archive(@Req() req: any, @Param('id') id: string) {
+  return this.service.archiveMine(req.user, id);
+}
 }

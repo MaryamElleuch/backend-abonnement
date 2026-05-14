@@ -63,13 +63,15 @@ model Entreprise {
   achatsClients   AchatAbonnementClient[]
   contratsClients ContratClient[]
 
-  dateCreation     DateTime @default(now())
-  dateModification DateTime @updatedAt
+  dateCreation                  DateTime                       @default(now())
+  dateModification              DateTime                       @updatedAt
+  paiementAbonnementEntreprises PaiementAbonnementEntreprise[]
+  paiementAbonnementClients     PaiementAbonnementClient[]
 }
 
 model Utilisateur {
   id             String            @id @default(uuid())
-  email          String            
+  email          String
   motDePasseHash String
   nomComplet     String?
   role           RoleUtilisateur
@@ -93,9 +95,11 @@ model Utilisateur {
   achatsClient AchatAbonnementClient[] @relation("AchatClientPayePar")
   signatures   Signature[]
 
-  dateCreation     DateTime @default(now())
-  dateModification DateTime @updatedAt
+  dateCreation              DateTime                   @default(now())
+  dateModification          DateTime                   @updatedAt
+  paiementAbonnementClients PaiementAbonnementClient[]
 }
+
 enum IntervalAbonnement {
   DAY
   MONTH
@@ -103,14 +107,14 @@ enum IntervalAbonnement {
 }
 
 model Abonnement {
-  id              String        @id @default(uuid())
-  nom             String
-  description     String?
-  prix            Float
+  id          String  @id @default(uuid())
+  nom         String
+  description String?
+  prix        Float
 
-  duree           Int @map("dureeMois")
-  interval        IntervalAbonnement @default(MONTH)
-    
+  duree    Int                @map("dureeMois")
+  interval IntervalAbonnement @default(MONTH)
+
   actif           Boolean       @default(true)
   // ✅ Stripe Product/Price (mensuel)
   stripeProductId String?
@@ -147,8 +151,9 @@ model AchatAbonnement {
   utilisateurId String?
   utilisateur   Utilisateur? @relation("UtilisateurAchats", fields: [utilisateurId], references: [id])
 
-  dateAchat DateTime           @default(now())
-  contrat   ContratEntreprise?
+  dateAchat                     DateTime                       @default(now())
+  contrat                       ContratEntreprise?
+  paiementAbonnementEntreprises PaiementAbonnementEntreprise[]
 
   @@index([abonnementId])
   @@index([utilisateurId])
@@ -193,9 +198,9 @@ model Signature {
   ip        String?
   userAgent String?
 
-  signatureHash String?
+  signatureHash  String?
   signatureImage String? @db.LongText
-  methode       String?
+  methode        String?
 
   @@index([contratId])
   @@index([signerUserId])
@@ -221,13 +226,14 @@ model AchatAbonnementClient {
   montant        Float
   statutPaiement StatutPaiement @default(PENDING)
 
-  stripeSessionId String?        @unique
+  stripeSessionId      String? @unique
   stripeSubscriptionId String? @unique
-  paymentIntentId String?
+  paymentIntentId      String?
   latestInvoiceId      String?
 
-  contratClient   ContratClient?
-  dateAchat       DateTime       @default(now())
+  contratClient             ContratClient?
+  dateAchat                 DateTime                   @default(now())
+  paiementAbonnementClients PaiementAbonnementClient[]
 
   @@index([entrepriseId])
   @@index([abonnementId])
@@ -236,13 +242,13 @@ model AchatAbonnementClient {
 }
 
 model AbonnementEntreprise {
-  id          String  @id @default(uuid())
+  id          String             @id @default(uuid())
   nom         String
   description String?
   prix        Float
-  duree           Int @map("dureeMois")
-  interval        IntervalAbonnement @default(MONTH)
-  actif       Boolean @default(true)
+  duree       Int                @map("dureeMois")
+  interval    IntervalAbonnement @default(MONTH)
+  actif       Boolean            @default(true)
 
   // Propriétaire de l’offre
   entrepriseId String
@@ -299,4 +305,52 @@ model ContratClient {
 
   @@index([entrepriseId])
   @@index([clientId])
+}
+
+model PaiementAbonnementEntreprise {
+  id String @id @default(uuid())
+
+  entrepriseId String
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id])
+
+  achatAbonnementId String?
+  achatAbonnement   AchatAbonnement? @relation(fields: [achatAbonnementId], references: [id])
+
+  montant        Float
+  statutPaiement StatutPaiement @default(PAID)
+
+  stripeInvoiceId      String  @unique
+  paymentIntentId      String?
+  stripeSubscriptionId String?
+
+  datePaiement DateTime @default(now())
+
+  @@index([entrepriseId])
+  @@index([stripeSubscriptionId])
+}
+
+model PaiementAbonnementClient {
+  id String @id @default(uuid())
+
+  entrepriseId String
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id])
+
+  clientId String
+  client   Utilisateur @relation(fields: [clientId], references: [id])
+
+  achatClientId String?
+  achatClient   AchatAbonnementClient? @relation(fields: [achatClientId], references: [id])
+
+  montant        Float
+  statutPaiement StatutPaiement @default(PAID)
+
+  stripeInvoiceId      String  @unique
+  paymentIntentId      String?
+  stripeSubscriptionId String?
+
+  datePaiement DateTime @default(now())
+
+  @@index([entrepriseId])
+  @@index([clientId])
+  @@index([stripeSubscriptionId])
 }

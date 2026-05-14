@@ -168,46 +168,78 @@ export class StripeController {
     throw new ForbiddenException('Accès refusé');
   }
 
+  // @Get('success')
+  // async handleSuccess(
+  //   @Query('session_id') sessionId: string,
+  //   @Res() res: Response,
+  // ) {
+  //   return res.send(`
+  //     <html>
+  //       <head>
+  //         <style>
+  //           body {
+  //             font-family: Arial, sans-serif;
+  //             text-align: center;
+  //             padding: 50px;
+  //             background-color: #f0f8ff;
+  //           }
+  //           .success {
+  //             color: #4CAF50;
+  //             font-size: 48px;
+  //             margin-bottom: 20px;
+  //           }
+  //           .message {
+  //             font-size: 24px;
+  //             margin-bottom: 30px;
+  //           }
+  //           .session-id {
+  //             color: #666;
+  //             font-size: 14px;
+  //             margin-top: 50px;
+  //           }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         <div class="success">✓</div>
+  //         <div class="message">Paiement réussi !</div>
+  //         <div>Votre abonnement a été activé avec succès.</div>
+  //         <div class="session-id">Session: ${sessionId}</div>
+  //       </body>
+  //     </html>
+  //   `);
+  // }
   @Get('success')
-  async handleSuccess(
-    @Query('session_id') sessionId: string,
-    @Res() res: Response,
-  ) {
-    return res.send(`
-      <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              text-align: center;
-              padding: 50px;
-              background-color: #f0f8ff;
-            }
-            .success {
-              color: #4CAF50;
-              font-size: 48px;
-              margin-bottom: 20px;
-            }
-            .message {
-              font-size: 24px;
-              margin-bottom: 30px;
-            }
-            .session-id {
-              color: #666;
-              font-size: 14px;
-              margin-top: 50px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="success">✓</div>
-          <div class="message">Paiement réussi !</div>
-          <div>Votre abonnement a été activé avec succès.</div>
-          <div class="session-id">Session: ${sessionId}</div>
-        </body>
-      </html>
-    `);
-  }
+async handleSuccess(
+  @Query('session_id') sessionId: string,
+  @Query('type') type: string,
+  @Res() res: Response,
+) {
+  const frontUrl = process.env.FRONT_URL || 'http://localhost:5173';
+
+  const redirectUrl =
+    type === 'client'
+      ? `${frontUrl}/client/plans`
+      : `${frontUrl}/entreprise/offres-disponibles`;
+
+  return res.send(`
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <script>
+          setTimeout(function () {
+            window.location.href = "${redirectUrl}";
+          }, 2000);
+        </script>
+      </head>
+      <body style="font-family: Arial; text-align: center; padding: 50px; background-color: #f0f8ff;">
+        <div style="color: #4CAF50; font-size: 48px;">✓</div>
+        <div style="font-size: 24px; margin-bottom: 30px;">Paiement réussi !</div>
+        <div>Votre abonnement a été activé avec succès.</div>
+        <div style="margin-top: 20px;">Redirection vers les offres...</div>
+      </body>
+    </html>
+  `);
+}
 
   @Get('cancel')
   async handleCancel(@Res() res: Response) {

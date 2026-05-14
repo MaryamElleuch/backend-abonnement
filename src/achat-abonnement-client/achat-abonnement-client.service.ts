@@ -20,7 +20,8 @@ export class AchatAbonnementClientService {
 async createCheckout(user: any, abonnementEntrepriseId: string) {
   if (!user?.id) throw new ForbiddenException('Non authentifié');
 
-  const backUrl = process.env.BACK_URL || 'http://localhost:3000';
+  // const backUrl = process.env.BACK_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
   const dbUser = await this.prisma.utilisateur.findUnique({
     where: { id: user.id },
@@ -101,8 +102,10 @@ async createCheckout(user: any, abonnementEntrepriseId: string) {
       },
     ],
     customer_update: { name: 'auto', address: 'auto' },
-    success_url: `${backUrl}/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${backUrl}/stripe/cancel?session_id={CHECKOUT_SESSION_ID}`,
+    // success_url: `${backUrl}/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
+    // cancel_url: `${backUrl}/stripe/cancel?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${frontendUrl}/client/plans?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+cancel_url: `${frontendUrl}/client/plans?payment=cancel&session_id={CHECKOUT_SESSION_ID}`,
     metadata: {
       type: 'ABO_CLIENT',
       achatClientId: achat.id,

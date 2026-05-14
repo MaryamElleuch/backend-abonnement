@@ -39,12 +39,11 @@ export class ContratController {
     return { url: `http://localhost:3000/contrats/${id}/pdf` };
   }
 
-  @Post(':id/generate')
-  @ApiOperation({ summary: 'Générer le PDF du contrat (DRAFT, sans signature)' })
-  async generate(@Param('id') id: string) {
-    return this.contratService.generatePdfDraft(id);
-  }
-
+@Post(':id/generate')
+@ApiOperation({ summary: 'Générer le PDF du contrat (accepte ID contrat ou ID entreprise)' })
+async generate(@Param('id') id: string) {
+  return this.contratService.generatePdfDraft(id);
+}
   @Get(':id/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadPdf(@Param('id') id: string, @Res() res: Response) {
@@ -97,7 +96,7 @@ export class ContratController {
   async getSignLink(@Param('id') id: string) {
     return this.contratService.createSignatureLink(id);
   }
-
+  
   @Get(':id/sign-page')
   @Header('Content-Type', 'text/html')
   async getSignPage(@Param('id') id: string, @Query('token') token: string) {
@@ -238,8 +237,16 @@ export class ContratController {
     };
   }
 @Get(':id')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('access-token')
 @ApiOperation({ summary: 'Afficher un contrat par son id' })
-async getContrat(@Param('id') id: string) {
-  return this.contratService.getContratById(id);
+async getContrat(@Param('id') id: string, @Req() req: any) {
+  return this.contratService.getContratById(id  , req.user);
 }
+@Get(':id/reset-test')
+async resetTest(@Param('id') id: string) {
+  return this.contratService.resetContratForTesting(id);
 }
+
+}
+

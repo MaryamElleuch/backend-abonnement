@@ -26,34 +26,62 @@ export class AbonnementsEntrepriseService {
     }
   }
 
+  // private async ensureEntrepriseIsPaid(entrepriseId: string) {
+  //   const entreprise = await this.prisma.entreprise.findUnique({
+  //     where: { id: entrepriseId },
+  //     select: {
+  //       id: true,
+  //       statut: true,
+  //       abonnementId: true,
+  //       abonnementExpireLe: true,
+  //     },
+  //   });
+
+  //   if (!entreprise) throw new NotFoundException('Entreprise introuvable');
+  //   if (entreprise.statut !== 'ACTIVE') {
+  //     throw new ForbiddenException('Entreprise non ACTIVE');
+  //   }
+
+  //   const now = new Date();
+  //   const isActive =
+  //     !!entreprise.abonnementId &&
+  //     !!entreprise.abonnementExpireLe &&
+  //     entreprise.abonnementExpireLe > now;
+
+  //   if (!isActive) {
+  //     throw new ForbiddenException(
+  //       "Votre abonnement plateforme n'est pas actif. Veuillez payer/renouveler.",
+  //     );
+  //   }
+  // }
   private async ensureEntrepriseIsPaid(entrepriseId: string) {
-    const entreprise = await this.prisma.entreprise.findUnique({
-      where: { id: entrepriseId },
-      select: {
-        id: true,
-        statut: true,
-        abonnementId: true,
-        abonnementExpireLe: true,
-      },
-    });
+  const entreprise = await this.prisma.entreprise.findUnique({
+    where: { id: entrepriseId },
+    select: {
+      id: true,
+      statut: true,
+      abonnementId: true,
+      stripeCustomerId: true,    },
+  });
 
-    if (!entreprise) throw new NotFoundException('Entreprise introuvable');
-    if (entreprise.statut !== 'ACTIVE') {
-      throw new ForbiddenException('Entreprise non ACTIVE');
-    }
-
-    const now = new Date();
-    const isActive =
-      !!entreprise.abonnementId &&
-      !!entreprise.abonnementExpireLe &&
-      entreprise.abonnementExpireLe > now;
-
-    if (!isActive) {
-      throw new ForbiddenException(
-        "Votre abonnement plateforme n'est pas actif. Veuillez payer/renouveler.",
-      );
-    }
+  if (!entreprise) {
+    throw new NotFoundException('Entreprise introuvable');
   }
+
+  if (!['ACTIVE', 'ACTIF'].includes(entreprise.statut)) {
+    throw new ForbiddenException('Entreprise non ACTIVE');
+  }
+
+  const isActive =
+  !!entreprise.abonnementId &&
+  !!entreprise.stripeCustomerId;
+
+  if (!isActive) {
+    throw new ForbiddenException(
+      "Votre abonnement plateforme n'est pas actif. Veuillez payer/renouveler.",
+    );
+  }
+}
 
   async createForMyEntreprise(user: any, dto: CreateAbonnementEntrepriseDto) {
     this.assertEntrepriseAccess(user);
@@ -152,89 +180,261 @@ export class AbonnementsEntrepriseService {
       },
     });
   }
+  async archiveMine(user: any, abonnementEntrepriseId: string) {
+  // 🔒 Seulement PROPRIETAIRE
+  if (!user) throw new ForbiddenException('Non authentifié');
+  if (user.role !== 'PROPRIETAIRE') {
+    throw new ForbiddenException('Seul le propriétaire peut archiver un abonnement');
+  }
 
+  if (!user.entrepriseId) {
+    throw new ForbiddenException('Aucune entreprise associée');
+  }
+
+  const abo = await this.prisma.abonnementEntreprise.findUnique({
+    where: { id: abonnementEntrepriseId },
+    select: {
+      id: true,
+      entrepriseId: true,
+      actif: true,
+    },
+  });
+
+  if (!abo) {
+    throw new NotFoundException('Abonnement entreprise introuvable');
+  }
+
+  // 🔒 Vérifie que c'est SON abonnement
+  if (abo.entrepriseId !== user.entrepriseId) {
+    throw new ForbiddenException(
+      "Vous ne pouvez pas archiver l'offre d'une autre entreprise",
+    );
+  }
+
+  // (optionnel) éviter double archive
+  if (!abo.actif) {
+    throw new BadRequestException('Cet abonnement est déjà archivé');
+  }
+
+  return this.prisma.abonnementEntreprise.update({
+    where: { id: abonnementEntrepriseId },
+    data: { actif: false },
+  });
+}
+  // async updateMine(
+  //   user: any,
+  //   abonnementEntrepriseId: string,
+  //   dto: UpdateAbonnementEntrepriseDto,
+  // ) {
+  //   this.assertEntrepriseAccess(user);
+
+  //   if (user.role !== 'ADMINISTRATEUR') {
+  //     await this.ensureEntrepriseIsPaid(user.entrepriseId);
+  //   }
+
+  //   const abo = await this.prisma.abonnementEntreprise.findUnique({
+  //     where: { id: abonnementEntrepriseId },
+  //     select: {
+  //       id: true,
+  //       entrepriseId: true,
+  //       stripeProductId: true,
+  //       stripePriceId: true,
+  //       prix: true,
+  //       duree: true,
+  //       interval: true,
+  //     },
+  //   });
+
+  //   if (!abo) {
+  //     throw new NotFoundException('Abonnement entreprise introuvable');
+  //   }
+
+  //   if (user.role !== 'ADMINISTRATEUR' && abo.entrepriseId !== user.entrepriseId) {
+  //     throw new ForbiddenException("Vous ne pouvez pas modifier l'offre d'une autre entreprise");
+  //   }
+
+  //   let newPriceId: string | undefined = undefined;
+
+  //   const prixChanged = typeof dto.prix === 'number';
+  //   const dureeChanged = typeof dto.duree === 'number';
+  //   const intervalChanged = typeof dto.interval === 'string';
+
+  //   if ((prixChanged || dureeChanged || intervalChanged) && abo.stripeProductId) {
+  //     const stripeIntervalMap: Record<'DAY' | 'MONTH' | 'YEAR', 'day' | 'month' | 'year'> = {
+  //       DAY: 'day',
+  //       MONTH: 'month',
+  //       YEAR: 'year',
+  //     };
+
+  //     const finalPrix = dto.prix ?? abo.prix;
+  //     const finalDuree = dto.duree ?? abo.duree;
+  //     const finalInterval = dto.interval ?? abo.interval;
+
+  //     const price = await this.stripeService.stripe.prices.create({
+  //       currency: 'eur',
+  //       unit_amount: Math.round(finalPrix * 100),
+  //       recurring: {
+  //         interval: stripeIntervalMap[finalInterval],
+  //         interval_count: finalDuree,
+  //       },
+  //       product: abo.stripeProductId,
+  //       metadata: {
+  //         source: 'BWS',
+  //         type: 'ABONNEMENT_ENTREPRISE_UPDATE',
+  //         aboId: abo.id,
+  //         interval: finalInterval,
+  //         duree: String(finalDuree),
+  //       },
+  //     });
+
+  //     newPriceId = price.id;
+  //   }
+
+  //   return this.prisma.abonnementEntreprise.update({
+  //     where: { id: abonnementEntrepriseId },
+  //     data: {
+  //       nom: dto.nom,
+  //       description: dto.description,
+  //       prix: dto.prix,
+  //       duree: dto.duree,
+  //       interval: dto.interval,
+  //       actif: dto.actif,
+  //       ...(newPriceId ? { stripePriceId: newPriceId } : {}),
+  //     },
+  //   });
+  // }
   async updateMine(
-    user: any,
-    abonnementEntrepriseId: string,
-    dto: UpdateAbonnementEntrepriseDto,
-  ) {
-    this.assertEntrepriseAccess(user);
+  user: any,
+  abonnementEntrepriseId: string,
+  dto: UpdateAbonnementEntrepriseDto,
+) {
+  this.assertEntrepriseAccess(user);
 
-    if (user.role !== 'ADMINISTRATEUR') {
-      await this.ensureEntrepriseIsPaid(user.entrepriseId);
-    }
+  if (user.role !== 'ADMINISTRATEUR') {
+    await this.ensureEntrepriseIsPaid(user.entrepriseId);
+  }
 
-    const abo = await this.prisma.abonnementEntreprise.findUnique({
-      where: { id: abonnementEntrepriseId },
-      select: {
-        id: true,
-        entrepriseId: true,
-        stripeProductId: true,
-        stripePriceId: true,
-        prix: true,
-        duree: true,
-        interval: true,
-      },
-    });
+  const abo = await this.prisma.abonnementEntreprise.findUnique({
+    where: { id: abonnementEntrepriseId },
+  });
 
-    if (!abo) {
-      throw new NotFoundException('Abonnement entreprise introuvable');
-    }
+  if (!abo) {
+    throw new NotFoundException('Abonnement entreprise introuvable');
+  }
 
-    if (user.role !== 'ADMINISTRATEUR' && abo.entrepriseId !== user.entrepriseId) {
-      throw new ForbiddenException("Vous ne pouvez pas modifier l'offre d'une autre entreprise");
-    }
+  if (user.role !== 'ADMINISTRATEUR' && abo.entrepriseId !== user.entrepriseId) {
+    throw new ForbiddenException("Vous ne pouvez pas modifier l'offre d'une autre entreprise");
+  }
 
-    let newPriceId: string | undefined = undefined;
+  const stripeIntervalMap: Record<'DAY' | 'MONTH' | 'YEAR', 'day' | 'month' | 'year'> = {
+    DAY: 'day',
+    MONTH: 'month',
+    YEAR: 'year',
+  };
 
-    const prixChanged = typeof dto.prix === 'number';
-    const dureeChanged = typeof dto.duree === 'number';
-    const intervalChanged = typeof dto.interval === 'string';
+  const newNom = dto.nom ?? abo.nom;
+  const newDescription = dto.description ?? abo.description;
+  const newPrix = dto.prix ?? abo.prix;
+  const newDuree = dto.duree ?? abo.duree;
+  const newInterval = dto.interval ?? abo.interval;
+  const newActif = dto.actif ?? abo.actif;
 
-    if ((prixChanged || dureeChanged || intervalChanged) && abo.stripeProductId) {
-      const stripeIntervalMap: Record<'DAY' | 'MONTH' | 'YEAR', 'day' | 'month' | 'year'> = {
-        DAY: 'day',
-        MONTH: 'month',
-        YEAR: 'year',
-      };
+  const prixChanged = Number(newPrix) !== Number(abo.prix);
+  const dureeChanged = Number(newDuree) !== Number(abo.duree);
+  const intervalChanged = newInterval !== abo.interval;
 
-      const finalPrix = dto.prix ?? abo.prix;
-      const finalDuree = dto.duree ?? abo.duree;
-      const finalInterval = dto.interval ?? abo.interval;
+  let newStripePriceId = abo.stripePriceId;
 
-      const price = await this.stripeService.stripe.prices.create({
-        currency: 'eur',
-        unit_amount: Math.round(finalPrix * 100),
-        recurring: {
-          interval: stripeIntervalMap[finalInterval],
-          interval_count: finalDuree,
-        },
-        product: abo.stripeProductId,
-        metadata: {
-          source: 'BWS',
-          type: 'ABONNEMENT_ENTREPRISE_UPDATE',
-          aboId: abo.id,
-          interval: finalInterval,
-          duree: String(finalDuree),
-        },
-      });
-
-      newPriceId = price.id;
-    }
-
-    return this.prisma.abonnementEntreprise.update({
-      where: { id: abonnementEntrepriseId },
-      data: {
-        nom: dto.nom,
-        description: dto.description,
-        prix: dto.prix,
-        duree: dto.duree,
-        interval: dto.interval,
-        actif: dto.actif,
-        ...(newPriceId ? { stripePriceId: newPriceId } : {}),
-      },
+  if (abo.stripeProductId) {
+    await this.stripeService.stripe.products.update(abo.stripeProductId, {
+      name: newNom,
+      description: newDescription ?? undefined,
     });
   }
+
+  if (prixChanged || dureeChanged || intervalChanged) {
+    const price = await this.stripeService.stripe.prices.create({
+      currency: 'eur',
+      unit_amount: Math.round(Number(newPrix) * 100),
+      recurring: {
+        interval: stripeIntervalMap[newInterval],
+        interval_count: Number(newDuree),
+      },
+      product: abo.stripeProductId,
+      metadata: {
+        source: 'BWS',
+        type: 'ABONNEMENT_ENTREPRISE_UPDATE',
+        abonnementEntrepriseId: abo.id,
+        entrepriseId: abo.entrepriseId,
+        interval: newInterval,
+        duree: String(newDuree),
+      },
+    });
+
+    newStripePriceId = price.id;
+
+    if (abo.stripePriceId) {
+      await this.stripeService.stripe.prices.update(abo.stripePriceId, {
+        active: false,
+      });
+    }
+
+    const achatsClients = await this.prisma.achatAbonnementClient.findMany({
+      where: {
+        abonnementEntrepriseId,
+        stripeSubscriptionId: {
+          not: null,
+        },
+      },
+      select: {
+        id: true,
+        stripeSubscriptionId: true,
+      },
+    });
+
+    console.log('Achats clients avec subscription trouvés =', achatsClients);
+
+    for (const achat of achatsClients) {
+      const subscription =
+        await this.stripeService.stripe.subscriptions.retrieve(
+          achat.stripeSubscriptionId!,
+        );
+
+      const item =
+        subscription.items.data.find(
+          (item) => item.price.id === abo.stripePriceId,
+        ) || subscription.items.data[0];
+
+      if (!item) continue;
+
+      await this.stripeService.stripe.subscriptions.update(
+        achat.stripeSubscriptionId!,
+        {
+          items: [
+            {
+              id: item.id,
+              price: newStripePriceId,
+            },
+          ],
+          proration_behavior: 'none',
+        },
+      );
+    }
+  }
+
+  return this.prisma.abonnementEntreprise.update({
+    where: { id: abonnementEntrepriseId },
+    data: {
+      nom: newNom,
+      description: newDescription,
+      prix: newPrix,
+      duree: newDuree,
+      interval: newInterval,
+      actif: newActif,
+      stripePriceId: newStripePriceId,
+    },
+  });
+}
 
   async deleteMine(user: any, abonnementEntrepriseId: string) {
     this.assertEntrepriseAccess(user);

@@ -3,249 +3,296 @@
 <head>
   <meta charset="utf-8" />
   <title>Contrat d’Abonnement</title>
-  <style>
-    @page { margin: 22mm 18mm; }
 
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 12px;
-      color: #111;
-      line-height: 1.45;
+  <style>
+    @page {
+      margin: 18mm 16mm;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #1f2937;
+      margin: 0;
+      background: #fff;
+    }
+
+    .document {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    /* HEADER */
     .header {
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+
+    .header-top {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #111;
     }
 
-    .brand h1 {
+    .title {
       margin: 0;
-      font-size: 20px;
-      letter-spacing: .3px;
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
     }
 
-    .brand .sub {
+    .subtitle {
       margin-top: 4px;
-      font-size: 11px;
-      color: #555;
+      font-size: 12px;
+      color: #6b7280;
     }
 
     .meta {
       text-align: right;
-      font-size: 11px;
-      color: #444;
+      font-size: 12px;
+      color: #374151;
     }
 
-    .meta .ref {
-      font-weight: 700;
-      color: #111;
-      margin-bottom: 6px;
-    }
-
+    /* SECTION */
     .section {
-      margin-top: 14px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      margin-bottom: 18px;
     }
 
     .section-title {
       font-size: 13px;
       font-weight: 700;
-      margin: 0 0 10px 0;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px 16px;
-    }
-
-    .field .label {
-      font-size: 10.5px;
-      color: #666;
-      margin-bottom: 2px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 4px;
       text-transform: uppercase;
-      letter-spacing: .2px;
     }
 
-    .field .value {
-      font-size: 12px;
+    /* INFO GRID */
+    .info-grid {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .info-row {
+      display: flex;
+    }
+
+    .info-row:not(:last-child) {
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .info-label {
+      width: 35%;
+      background: #f8fafc;
+      padding: 10px;
       font-weight: 600;
-      color: #111;
-      word-break: break-word;
+      color: #475569;
+    }
+
+    .info-value {
+      width: 65%;
+      padding: 10px;
+    }
+
+    .highlight {
+      font-weight: 700;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    /* CONDITIONS */
+    .conditions-box {
+      border: 1px solid #e5e7eb;
+      border-left: 4px solid #0f172a;
+      padding: 12px 16px;
+      border-radius: 6px;
+      background: #fafafa;
     }
 
     .conditions {
-      margin-top: 10px;
+      margin: 0;
       padding-left: 18px;
     }
 
     .conditions li {
-      margin: 4px 0;
+      margin-bottom: 6px;
     }
 
-    .signatures {
-      margin-top: 12px;
-      display: flex;
-      justify-content: flex-start;
-    }
-
-    .sig-box {
-      border: 1px dashed #888;
+    /* SIGNATURE */
+    .signature-card {
+      width: 320px;
+      border: 1px solid #d1d5db;
       border-radius: 8px;
-      padding: 12px;
-      min-height: 150px;
-      width: 360px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .sig-title {
-      font-weight: 700;
-      font-size: 12px;
-      margin-bottom: 8px;
-    }
-
-    .sig-image {
-      margin-top: 8px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      min-height: 70px;
-    }
-
-    .sig-image img {
-      max-width: 240px;
-      max-height: 80px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 4px;
+      padding: 14px;
       background: #fff;
     }
 
-    .sig-empty {
-      margin-top: 8px;
-      min-height: 70px;
+    .signature-label {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .signature-box {
+      height: 100px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
       display: flex;
-      align-items: flex-end;
-      color: #444;
+      align-items: center;
+      justify-content: center;
+      background: #f9fafb;
     }
 
-    .sig-line {
-      border-top: 1px solid #222;
-      padding-top: 6px;
+    .signature-box img {
+      max-height: 80px;
+      max-width: 100%;
+    }
+
+    .signature-placeholder {
       font-size: 11px;
-      color: #555;
+      color: #9ca3af;
+      font-style: italic;
     }
 
+    .signature-footer {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #6b7280;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 6px;
+    }
+
+    /* FOOTER */
     .footer {
-      margin-top: 14px;
-      font-size: 10px;
-      color: #777;
-      border-top: 1px solid #ddd;
+      margin-top: 20px;
       padding-top: 10px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 10px;
+      color: #6b7280;
     }
 
-    .muted {
-      color: #666;
-      font-weight: 400;
+    /* PRINT FIX */
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+      }
+
+      .section,
+      .signature-card,
+      .info-grid {
+        page-break-inside: avoid;
+      }
     }
+
   </style>
 </head>
+
 <body>
+  <div class="document">
 
-  <div class="header">
-    <div class="brand">
-      <h1>Contrat d’abonnement</h1>
-      <div class="sub">Document généré automatiquement</div>
-    </div>
-
-    <div class="meta">
-      <div class="ref">Réf: {{contratId}}</div>
-      <div>Date de génération: {{dateGeneration}}</div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">1) Informations</div>
-
-    <div class="grid">
-      <div class="field">
-        <div class="label">Entreprise</div>
-        <div class="value">{{entrepriseNom}}</div>
-      </div>
-
-      <div class="field">
-        <div class="label">Propriétaire (email)</div>
-        <div class="value">{{proprietaireEmail}}</div>
-      </div>
-
-      <div class="field">
-        <div class="label">Abonnement</div>
-        <div class="value">{{abonnementNom}}</div>
-      </div>
-
-      <div class="field">
-        <div class="label">Prix</div>
-        <div class="value">{{prixFormate}} <span class="muted">/ {{dureeMois}} mois</span></div>
-      </div>
-
-      <div class="field">
-        <div class="label">Date début</div>
-        <div class="value">{{dateDebut}}</div>
-      </div>
-
-      <div class="field">
-        <div class="label">Date fin</div>
-        <div class="value">{{dateFin}}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">2) Conditions</div>
-    <ul class="conditions">
-      <li>Paiement géré via Stripe.</li>
-      <li>Renouvellement automatique selon les règles Stripe.</li>
-      <li>Activation du service après confirmation du paiement et signature du contrat.</li>
-    </ul>
-  </div>
-
-  <div class="section">
-    <div class="section-title">3) Signature</div>
-
-    <div class="signatures">
-      <div class="sig-box">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-top">
         <div>
-          <div class="sig-title">Entreprise</div>
+          <h1 class="title">Contrat d’Abonnement</h1>
+          <div class="subtitle">Document officiel généré automatiquement</div>
+        </div>
 
+        <div class="meta">
+          <div><strong>Réf :</strong> {{contratId}}</div>
+          <div><strong>Date :</strong> {{dateGeneration}}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFOS -->
+    <div class="section">
+      <div class="section-title">Informations</div>
+
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-label">Entreprise</div>
+          <div class="info-value highlight">{{entrepriseNom}}</div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label">Propriétaire</div>
+          <div class="info-value">{{proprietaireEmail}}</div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label">Abonnement</div>
+          <div class="info-value highlight">{{abonnementNom}}</div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label">Tarif</div>
+          <div class="info-value">
+            <span class="highlight">{{prixFormate}}</span>
+            <span class="muted"> / {{dureeMois}} mois</span>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label">Date début</div>
+          <div class="info-value">{{dateDebut}}</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CONDITIONS -->
+    <div class="section">
+      <div class="section-title">Conditions</div>
+
+      <div class="conditions-box">
+        <ul class="conditions">
+          <li>Paiement sécurisé via Stripe.</li>
+          <li>Renouvellement automatique.</li>
+          <li>Activation après paiement et signature.</li>
+          <li>Respect des normes légales (RGPD).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="section">
+      <div class="section-title">Signature</div>
+
+      <div class="signature-card">
+        <div class="signature-label">Entreprise</div>
+
+        <div class="signature-box">
           {{#signatureImage}}
-            <div class="sig-image">
-              <img src="{{signatureImage}}" alt="Signature entreprise" />
-            </div>
+            <img src="{{{signatureImage}}}" alt="Signature"/>
           {{/signatureImage}}
 
           {{^signatureImage}}
-            <div class="sig-empty">__________________________</div>
+            <div class="signature-placeholder">Aucune signature</div>
           {{/signatureImage}}
         </div>
 
-        <div class="sig-line">Nom / Signature / Cachet</div>
+        <div class="signature-footer">
+          Nom, signature et date
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="footer">
-    <div>Ce document est généré automatiquement et peut être stocké dans votre espace.</div>
-    <div class="muted">Référence contrat: {{contratId}}</div>
-  </div>
+    <!-- FOOTER -->
+    <div class="footer">
+      Document généré automatiquement • Réf : {{contratId}}
+    </div>
 
+  </div>
 </body>
 </html>
